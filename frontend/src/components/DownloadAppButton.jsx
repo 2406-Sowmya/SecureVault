@@ -93,7 +93,8 @@ export default function DownloadAppButton() {
     }
   }
 
-  const hideOnAuthBridgeScreens = location.pathname === '/face-scan' ||
+  const hideOnAuthBridgeScreens = location.pathname === '/face' ||
+    location.pathname === '/face-scan' ||
     location.pathname === '/verify-otp'
 
   if (installed || dismissed || hideOnAuthBridgeScreens) return null

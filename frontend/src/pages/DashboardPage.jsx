@@ -109,10 +109,10 @@ export default function DashboardPage() {
               <Sparkles className="h-3.5 w-3.5" />
               Live security posture
             </div>
-            <h1 className="text-4xl font-semibold leading-tight text-white xl:text-[3.6rem]">
+            <h1 className="text-2xl font-semibold leading-tight text-white xl:text-3xl">
               Welcome back, <span className="gradient-text">{user?.username || 'Operator'}</span>
             </h1>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-vault-muted">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-vault-muted">
               Your vault is guarded by multi-factor authentication, session intelligence, and encrypted storage.
             </p>
           </div>
@@ -133,10 +133,10 @@ export default function DashboardPage() {
               </div>
               <span className="metric-dot" />
             </div>
-            <div className={`${stat.compact ? 'text-[1.1rem] leading-9 xl:text-[1.35rem]' : 'text-5xl leading-none'} font-semibold text-white`}>
+            <div className={`${stat.compact ? 'text-lg leading-8 xl:text-xl' : 'text-3xl leading-none'} font-semibold text-white`}>
               {stat.value}
             </div>
-            <div className="mt-4 text-[1.05rem] font-semibold text-vault-text">{stat.label}</div>
+            <div className="mt-4 text-base font-semibold text-vault-text">{stat.label}</div>
             <p className="mt-3 text-sm leading-6 text-vault-muted">{stat.sub}</p>
           </Card>
         ))}
@@ -147,7 +147,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-cyan-300" />
-              <h2 className="text-[1.15rem] font-semibold text-white">Recent Login Activity</h2>
+              <h2 className="text-lg font-semibold text-white">Recent Login Activity</h2>
             </div>
             <span className="badge-stage">{attempts.length} events</span>
           </div>
@@ -193,15 +193,15 @@ export default function DashboardPage() {
         <Card hover={false} accent="violet" className="p-6">
           <div className="mb-6 flex items-center gap-2">
             <HardDrive className="h-4 w-4 text-sky-300" />
-            <h2 className="text-[1.15rem] font-semibold text-white">Vault Capacity</h2>
+            <h2 className="text-lg font-semibold text-white">Vault Capacity</h2>
           </div>
           <div className="flex items-end justify-between">
             <div>
-              <div className="text-5xl font-semibold leading-none text-white">{data?.vault_summary?.total_files ?? 0}</div>
-              <p className="mt-3 text-[1.05rem] text-vault-muted">Encrypted files</p>
+              <div className="text-3xl font-semibold leading-none text-white">{data?.vault_summary?.total_files ?? 0}</div>
+              <p className="mt-3 text-base text-vault-muted">Encrypted files</p>
             </div>
             <div className="text-right">
-              <div className="text-[2rem] font-semibold leading-none text-cyan-200">{data?.vault_summary?.total_mb ?? 0} MB</div>
+              <div className="text-xl font-semibold leading-none text-cyan-200">{data?.vault_summary?.total_mb ?? 0} MB</div>
               <p className="mt-2 text-sm text-vault-muted">Storage used</p>
             </div>
           </div>

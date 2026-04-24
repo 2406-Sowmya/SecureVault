@@ -285,6 +285,7 @@ def set_lockout(username: str, seconds: int = 30) -> None:
             INSERT INTO failed_attempts (username, count, locked_until, last_attempt)
             VALUES (?, 0, ?, datetime('now'))
             ON CONFLICT(username) DO UPDATE SET
+                count = 0,
                 locked_until = ?,
                 last_attempt = datetime('now')
             """,

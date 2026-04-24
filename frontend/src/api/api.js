@@ -41,6 +41,7 @@ api.interceptors.response.use(
 export const authAPI = {
   register:            (data)          => api.post('/auth/register', data),
   login:               (data)          => api.post('/auth/login', data),
+  reportIntruder:      (data)          => api.post('/auth/report-intruder', data),
   faceVerify:          (data)          => api.post('/auth/face-verify', data),
   verifyOtp:           (data)          => api.post('/auth/verify-otp', data),
   resendOtp:           (data)          => api.post('/auth/resend-otp', data),

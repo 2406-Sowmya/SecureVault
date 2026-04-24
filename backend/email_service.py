@@ -161,7 +161,12 @@ def _resolve_image_attachment(image_path: str | None) -> Path | None:
     if not image_path:
         return None
 
-    path = Path(image_path)
+    path = Path(image_path).expanduser()
+    if not path.is_absolute():
+        path = (Path(__file__).parent / path).resolve()
+    else:
+        path = path.resolve()
+
     if not path.exists() or not path.is_file():
         logger.warning("Intruder image attachment missing on disk: %s", image_path)
         return None
@@ -175,7 +180,9 @@ def _attach_image(msg: MIMEMultipart, image_path: str | None) -> bool:
         return False
 
     try:
-        image_bytes = path.read_bytes()
+        with open(path, "rb") as image_file:
+            image_bytes = image_file.read()
+
         if not image_bytes:
             logger.warning("Intruder image attachment is empty: %s", image_path)
             return False
@@ -191,6 +198,7 @@ def _attach_image(msg: MIMEMultipart, image_path: str | None) -> bool:
 
         img_part.add_header("Content-Disposition", "attachment", filename=path.name)
         msg.attach(img_part)
+        logger.info("Intruder image attached to email: %s", path)
         return True
     except Exception as exc:
         logger.error("Failed to attach intruder image %s: %s", image_path, exc)

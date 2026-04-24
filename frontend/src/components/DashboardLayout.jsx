@@ -108,7 +108,7 @@ export default function DashboardLayout() {
                     <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-100/70">
                       {activeRoute.eyebrow}
                     </div>
-                    <div className="mt-1 text-2xl font-semibold text-white">{activeRoute.title}</div>
+                    <div className="mt-1 text-xl font-semibold text-white">{activeRoute.title}</div>
                   </div>
 
                   <div className="topbar-search hidden min-w-0 max-w-2xl flex-1 md:flex">
@@ -156,7 +156,7 @@ export default function DashboardLayout() {
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-100/70">
                   {activeRoute.eyebrow}
                 </div>
-                <div className="mt-2 text-2xl font-semibold text-white">{activeRoute.title}</div>
+                <div className="mt-2 text-xl font-semibold text-white">{activeRoute.title}</div>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-vault-muted">{activeRoute.copy}</p>
                 <div className="topbar-search mt-4 md:hidden">
                   <Search className="h-4 w-4 shrink-0 text-cyan-200/70" />

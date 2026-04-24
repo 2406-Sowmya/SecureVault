@@ -1,3 +1,4 @@
+import { memo, useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const orbs = [
@@ -64,8 +65,15 @@ const beams = [
   },
 ]
 
-export default function AnimatedBackground() {
+const AnimatedBackground = memo(function AnimatedBackground() {
   const reduceMotion = useReducedMotion()
+  const [animationsReady, setAnimationsReady] = useState(false)
+
+  useEffect(() => {
+    setAnimationsReady(true)
+  }, [])
+
+  const shouldAnimate = animationsReady && !reduceMotion
 
   return (
     <div aria-hidden="true" className="cyber-background">
@@ -79,10 +87,10 @@ export default function AnimatedBackground() {
         <motion.div
           key={orb.className}
           className={orb.className}
-          animate={reduceMotion ? undefined : orb.animate}
-          transition={reduceMotion
-            ? undefined
-            : { duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
+          animate={shouldAnimate ? orb.animate : undefined}
+          transition={shouldAnimate
+            ? { duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }
+            : undefined}
         />
       ))}
 
@@ -90,10 +98,10 @@ export default function AnimatedBackground() {
         <motion.div
           key={beam.className}
           className={beam.className}
-          animate={reduceMotion ? undefined : beam.animate}
-          transition={reduceMotion
-            ? undefined
-            : { duration: beam.duration, repeat: Infinity, ease: 'easeInOut' }}
+          animate={shouldAnimate ? beam.animate : undefined}
+          transition={shouldAnimate
+            ? { duration: beam.duration, repeat: Infinity, ease: 'easeInOut' }
+            : undefined}
         />
       ))}
 
@@ -111,7 +119,7 @@ export default function AnimatedBackground() {
             strokeWidth="1.25"
             strokeLinecap="round"
             initial={{ pathLength: 0.1, opacity: 0.12 }}
-            animate={reduceMotion
+            animate={!shouldAnimate
               ? { pathLength: 1, opacity: 0.18 }
               : { pathLength: [0.12, 1, 0.18], opacity: [0.12, 0.42, 0.12] }}
             transition={{
@@ -126,13 +134,13 @@ export default function AnimatedBackground() {
 
       <motion.div
         className="cyber-radar"
-        animate={reduceMotion ? undefined : { rotate: 360 }}
-        transition={reduceMotion ? undefined : { duration: 30, repeat: Infinity, ease: 'linear' }}
+        animate={shouldAnimate ? { rotate: 360 } : undefined}
+        transition={shouldAnimate ? { duration: 30, repeat: Infinity, ease: 'linear' } : undefined}
       />
       <motion.div
         className="cyber-radar-secondary"
-        animate={reduceMotion ? undefined : { rotate: -360 }}
-        transition={reduceMotion ? undefined : { duration: 22, repeat: Infinity, ease: 'linear' }}
+        animate={shouldAnimate ? { rotate: -360 } : undefined}
+        transition={shouldAnimate ? { duration: 22, repeat: Infinity, ease: 'linear' } : undefined}
       />
       <div className="cyber-core" />
 
@@ -140,7 +148,7 @@ export default function AnimatedBackground() {
         <motion.span
           key={node.className}
           className={`cyber-node ${node.className}`}
-          animate={reduceMotion
+          animate={!shouldAnimate
             ? { opacity: 0.5, scale: 1 }
             : { opacity: [0.22, 1, 0.22], scale: [0.75, 1.5, 0.75] }}
           transition={{
@@ -154,9 +162,11 @@ export default function AnimatedBackground() {
 
       <motion.div
         className="cyber-scanlines"
-        animate={reduceMotion ? undefined : { opacity: [0.12, 0.2, 0.12], y: [0, 14, 0] }}
-        transition={reduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        animate={shouldAnimate ? { opacity: [0.12, 0.2, 0.12], y: [0, 14, 0] } : undefined}
+        transition={shouldAnimate ? { duration: 8, repeat: Infinity, ease: 'easeInOut' } : undefined}
       />
     </div>
   )
-}
+})
+
+export default AnimatedBackground

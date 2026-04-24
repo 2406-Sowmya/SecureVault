@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -21,20 +22,40 @@ function LoginRoute() {
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />
 }
 
+function RegisterRoute() {
+  const { isAuthenticated } = useAuth()
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />
+}
+
 function AppRoutes() {
   const { isAuthenticated } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    console.log('Route loaded:', location.pathname)
+  }, [location.pathname])
+
+  useEffect(() => {
+    const viewingProtectedRoute = ['/dashboard', '/vault', '/notifications']
+      .some((path) => location.pathname.startsWith(path))
+
+    if (!isAuthenticated && viewingProtectedRoute) {
+      navigate('/login', { replace: true })
+    }
+  }, [isAuthenticated, location.pathname, navigate])
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route
           path="/"
-          element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+          element={<Navigate to={isAuthenticated ? '/dashboard' : '/register'} replace />}
         />
         <Route path="/login" element={<LoginRoute />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/face-scan" element={<FaceScanPage />} />
+        <Route path="/register" element={<RegisterRoute />} />
+        <Route path="/face" element={<FaceScanPage />} />
+        <Route path="/face-scan" element={<Navigate to="/face" replace />} />
         <Route path="/verify-otp" element={<OTPPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -49,7 +70,7 @@ function AppRoutes() {
 
         <Route
           path="*"
-          element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+          element={<Navigate to={isAuthenticated ? '/dashboard' : '/register'} replace />}
         />
       </Routes>
     </AnimatePresence>

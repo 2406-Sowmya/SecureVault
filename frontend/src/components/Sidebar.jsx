@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
@@ -38,7 +38,6 @@ const links = [
 
 export default function Sidebar({ expanded, onToggle }) {
   const { logout } = useAuth()
-  const navigate = useNavigate()
   const loc = useLocation()
   const [health, setHealth] = useState({ status: 'online', score: 100 })
 
@@ -65,7 +64,6 @@ export default function Sidebar({ expanded, onToggle }) {
 
   const handleLogout = () => {
     logout()
-    navigate('/login', { replace: true })
   }
 
   const healthLabel = health.status === 'online'
@@ -171,7 +169,7 @@ export default function Sidebar({ expanded, onToggle }) {
                 <div className="mt-4 flex items-end justify-between">
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.24em] text-vault-muted">Cluster score</div>
-                    <div className="mt-1 text-3xl font-semibold text-white">{Math.round(health.score ?? 0)}</div>
+                    <div className="mt-1 text-2xl font-semibold text-white">{Math.round(health.score ?? 0)}</div>
                   </div>
                   <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${healthBadgeTone}`}>
                     {scoreBucket}

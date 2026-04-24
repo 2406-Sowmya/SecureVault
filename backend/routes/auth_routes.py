@@ -82,6 +82,15 @@ class LoginRequest(BaseModel):
     intruder_image:  str | None = None   # base64 JPEG – captured silently on 3rd attempt
 
 
+class IntruderCaptureRequest(BaseModel):
+    username:        str
+    intruder_image:  str
+    latitude:        float | None = None
+    longitude:       float | None = None
+    location_accuracy: float | None = None
+    location_permission: str | None = None
+
+
 class FaceVerifyRequest(BaseModel):
     session_id: str
     face_image: str   # base64-encoded JPEG
@@ -208,6 +217,7 @@ async def login(body: LoginRequest, request: Request):
             # ── INTRUDER TRIGGER ──────────────────────────────────────────────
             user = db.get_user(username)
             intruder_img_path: str | None = None
+            event_time = datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M:%S UTC")
 
             # Save webcam snapshot if the frontend sent one
             if body.intruder_image:
@@ -220,8 +230,9 @@ async def login(body: LoginRequest, request: Request):
                 except Exception as exc:
                     logger.error("Failed to save intruder webcam image: %s", exc)
 
-            if user:
-                event_time = datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M:%S UTC")
+            db.set_lockout(username, seconds=auth.LOCKOUT_SECONDS)
+
+            if user and intruder_img_path:
                 es.send_intruder_alert(
                     user["email"], username, new_count,
                     location, intruder_img_path, ua,
@@ -232,16 +243,25 @@ async def login(body: LoginRequest, request: Request):
                     "Location=%s", username, new_count, location.get("display")
                 )
 
-            # Lock for 30 seconds, then reset counter
-            db.set_lockout(username, seconds=auth.LOCKOUT_SECONDS)
-            db.reset_failed_attempts(username)
+            elif user:
+                logger.warning(
+                    "INTRUDER ALERT capture requested for user=%s after %d failed attempts. "
+                    "Awaiting frontend evidence upload.",
+                    username,
+                    new_count,
+                )
 
-            raise HTTPException(
-                429,
-                f"Maximum login attempts reached ({auth.MAX_ATTEMPTS}). "
-                f"Account locked for {auth.LOCKOUT_SECONDS} seconds. "
-                f"A security alert has been sent to the registered email."
-            )
+            detail = {
+                "message": (
+                    f"Maximum login attempts reached ({auth.MAX_ATTEMPTS}). "
+                    f"Account locked for {auth.LOCKOUT_SECONDS} seconds. "
+                    f"{'A security alert has been sent to the registered email.' if intruder_img_path else 'Security capture is required before the alert email is sent.'}"
+                ),
+                "locked_seconds": auth.LOCKOUT_SECONDS,
+                "capture_required": intruder_img_path is None,
+                "username": username,
+            }
+            raise HTTPException(429, detail)
 
         # Fewer than MAX failures – tell the user how many attempts remain
         raise HTTPException(
@@ -264,6 +284,51 @@ async def login(body: LoginRequest, request: Request):
         "session_id": session_id,
         "next_step":  "face_verify",
         "location":   location,
+    }
+
+
+@router.post("/report-intruder")
+async def report_intruder(body: IntruderCaptureRequest, request: Request):
+    username = body.username.strip().lower()
+    user = db.get_user(username)
+    if not user:
+        raise HTTPException(404, "User not found.")
+
+    if not db.is_locked_out(username):
+        raise HTTPException(400, "No active intruder capture request for this account.")
+
+    try:
+        img_bytes = _b64_to_bytes(body.intruder_image)
+    except Exception as exc:
+        logger.error("Failed to decode intruder image for %s: %s", username, exc)
+        raise HTTPException(400, "Invalid intruder image.")
+
+    intruder_img_path = frm.save_intruder_image_from_bytes(img_bytes, username)
+    if not intruder_img_path:
+        raise HTTPException(500, "Could not save intruder image.")
+
+    db.update_attempt_image(username, "password", auth.MAX_ATTEMPTS, intruder_img_path)
+
+    location = _location_from_request(request, body)
+    ua = _user_agent(request)
+    event_time = datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M:%S UTC")
+
+    logger.warning("INTRUDER ALERT evidence received for user=%s", username)
+    if not es.send_intruder_alert(
+        user["email"],
+        username,
+        auth.MAX_ATTEMPTS,
+        location,
+        intruder_img_path,
+        ua,
+        event_time=event_time,
+    ):
+        raise HTTPException(500, "Failed to send intruder alert email.")
+
+    return {
+        "message": "Intruder evidence captured and alert sent.",
+        "image_path": intruder_img_path,
+        "location": location,
     }
 
 

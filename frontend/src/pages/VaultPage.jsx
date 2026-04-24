@@ -151,7 +151,7 @@ export default function VaultPage() {
   const [search, setSearch] = useState(() => searchParams.get('q') || '')
   const [filter, setFilter] = useState('all')
   const [deleteModal, setDeleteModal] = useState(null)
-  const fileInput = useRef(null)
+  const fileInputRef = useRef(null)
   const toastTimerRef = useRef(null)
 
   const showToast = (msg, type = 'success') => {
@@ -211,10 +211,24 @@ export default function VaultPage() {
     setSearchParams(nextParams, { replace: true })
   }
 
-  const openFilePicker = () => {
-    if (!fileInput.current || uploading) return
-    fileInput.current.value = ''
-    fileInput.current.click()
+  const handleUploadClick = () => {
+    console.log('Upload clicked')
+
+    const input = fileInputRef.current
+    if (!input || uploading) return
+
+    input.value = ''
+
+    if (typeof input.showPicker === 'function') {
+      try {
+        input.showPicker()
+        return
+      } catch {
+        // Fall back to click() for browsers that expose showPicker but reject it.
+      }
+    }
+
+    input.click()
   }
 
   const syncUploadedFile = (uploadedFile) => {
@@ -264,12 +278,14 @@ export default function VaultPage() {
     } finally {
       setUploading(false)
       setUploadPct(0)
-      if (fileInput.current) fileInput.current.value = ''
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
-  const handleUpload = (e) => {
-    const selectedFile = e.target.files?.[0]
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files?.[0]
+    console.log('File selected', selectedFile)
+
     if (selectedFile) {
       void uploadFile(selectedFile)
     }
@@ -286,21 +302,25 @@ export default function VaultPage() {
 
   const handleDownload = async (file) => {
     setDownloading(file.id)
+    let downloadUrl = null
+
     try {
       const res = await vaultAPI.download(file.id)
       const blob = res.data instanceof Blob ? res.data : new Blob([res.data])
-      const url = URL.createObjectURL(blob)
+      downloadUrl = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
-      link.href = url
+      link.href = downloadUrl
       link.download = safeDownloadName(file.original_name)
       document.body.appendChild(link)
       link.click()
       link.remove()
-      URL.revokeObjectURL(url)
       showToast(`"${file.original_name}" downloaded.`)
     } catch {
       showToast('Download failed.', 'error')
     } finally {
+      if (downloadUrl) {
+        window.URL.revokeObjectURL(downloadUrl)
+      }
       setDownloading(null)
     }
   }
@@ -363,12 +383,12 @@ export default function VaultPage() {
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Encrypted storage
               </div>
-              <h1 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">Secure Vault</h1>
+              <h1 className="mt-2 text-xl font-semibold text-white sm:text-2xl">Secure Vault</h1>
               <p className="mt-2 text-sm text-vault-muted">Drop files into a hardened workspace with quick filters and encrypted retrieval.</p>
             </div>
           </div>
-          <input ref={fileInput} type="file" onChange={handleUpload} className="hidden" accept="*/*" tabIndex={-1} />
-          <button type="button" onClick={openFilePicker} disabled={uploading} className="ripple-button group w-full justify-center sm:w-auto">
+          <input ref={fileInputRef} type="file" onChange={handleFileChange} accept="*/*" tabIndex={-1} className="sr-only" aria-hidden="true" />
+          <button type="button" onClick={handleUploadClick} disabled={uploading} className="ripple-button group w-full justify-center sm:w-auto">
             {uploading ? <span className="spinner-small border-white/50" /> : <Upload className="h-4 w-4" />}
             {uploading ? `Uploading ${uploadPct}%` : 'Upload File'}
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
@@ -382,11 +402,11 @@ export default function VaultPage() {
             className="flex h-full min-h-44 flex-col items-center justify-center rounded-lg border border-dashed border-cyan-300/30 bg-cyan-300/[0.04] p-6 text-center"
             role="button"
             tabIndex={0}
-            onClick={openFilePicker}
+            onClick={handleUploadClick}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
-                openFilePicker()
+                handleUploadClick()
               }
             }}
             onDragEnter={(e) => { e.preventDefault(); setDragging(true) }}
@@ -423,7 +443,7 @@ export default function VaultPage() {
           ].map(({ icon: Icon, label, val, color }, index) => (
             <Card key={label} delay={0.04 * index} className="p-4">
               <Icon className={`mb-4 h-5 w-5 ${color}`} />
-              <div className="text-2xl font-semibold text-white">{val}</div>
+              <div className="text-xl font-semibold text-white">{val}</div>
               <div className="mt-1 text-xs text-vault-muted">{label}</div>
             </Card>
           ))}
@@ -463,7 +483,7 @@ export default function VaultPage() {
           <p className="mt-5 font-semibold text-white">{search || filter !== 'all' ? 'No files match your filters' : 'Your vault is empty'}</p>
           <p className="mt-2 text-sm text-vault-muted">{search || filter !== 'all' ? 'Try a different search or file type.' : 'Upload your first encrypted file.'}</p>
           {!search && filter === 'all' && (
-            <button type="button" onClick={openFilePicker} className="secondary-action mt-5">
+            <button type="button" onClick={handleUploadClick} className="secondary-action mt-5">
               <Plus className="h-4 w-4" />
               Upload First File
             </button>

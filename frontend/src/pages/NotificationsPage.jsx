@@ -129,21 +129,21 @@ export default function NotificationsPage() {
                 <AlertTriangle className="h-3.5 w-3.5" />
                 Security notifications
               </div>
-              <h1 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">Notifications</h1>
+              <h1 className="mt-2 text-xl font-semibold text-white sm:text-2xl">Notifications</h1>
               <p className="mt-2 text-sm text-vault-muted">Review intruder alerts and authentication activity from your protected session.</p>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:min-w-72 sm:grid-cols-3">
             <div className="rounded-[1.35rem] border border-amber-300/20 bg-amber-300/10 p-3 backdrop-blur-xl">
-              <div className="text-2xl font-semibold text-white">{intruderAlerts.length}</div>
+              <div className="text-xl font-semibold text-white">{intruderAlerts.length}</div>
               <div className="mt-1 text-xs text-vault-muted">Intruder alerts</div>
             </div>
             <div className="rounded-[1.35rem] border border-emerald-300/20 bg-emerald-300/10 p-3 backdrop-blur-xl">
-              <div className="text-2xl font-semibold text-white">{safeLogins}</div>
+              <div className="text-xl font-semibold text-white">{safeLogins}</div>
               <div className="mt-1 text-xs text-vault-muted">Verified logins</div>
             </div>
             <div className="rounded-[1.35rem] border border-cyan-300/20 bg-cyan-300/10 p-3 backdrop-blur-xl">
-              <div className="text-2xl font-semibold text-white">{reviewQueue}</div>
+              <div className="text-xl font-semibold text-white">{reviewQueue}</div>
               <div className="mt-1 text-xs text-vault-muted">Needs review</div>
             </div>
           </div>
