@@ -43,24 +43,6 @@ SecureVault/
             └── ResetPasswordPage.jsx
 ```
 
----
-
-## What's New in v2.0
-
-| Feature | Old | New |
-|---------|-----|-----|
-| UI | Tkinter | React + Tailwind + Framer Motion |
-| Backend | Tkinter embedded | FastAPI REST API |
-| Geolocation | ipinfo.io (city only) | ip-api.com (city, region, country, lat/lon, ISP) |
-| Location in email | Text only | Google Maps link + full details |
-| Password Reset | ❌ None | ✅ Secure UUID token, email link, 1hr expiry |
-| File Storage | ❌ None | ✅ Per-user vault, upload/download/delete |
-| Auth tokens | ❌ None | ✅ JWT Bearer (8hr expiry) |
-| Email HTML | Basic | Rich dark-theme HTML with Maps links |
-| Intruder Alert | Basic | Intruder photo + exact location + Maps + device info |
-
----
-
 ## Prerequisites
 
 | Tool | Version | Notes |
@@ -250,19 +232,6 @@ All emails use a dark-themed HTML template. Intruder alerts include:
 - 🗺️ Google Maps link with coordinates
 - 💻 Browser/Device User-Agent string
 
----
-
-## Production Deployment Checklist
-
-- [ ] Change `JWT_SECRET_KEY` to a cryptographically random value
-- [ ] Set `FRONTEND_URL` to your actual domain
-- [ ] Use HTTPS (nginx + Let's Encrypt recommended)
-- [ ] Move SQLite to PostgreSQL for concurrent access
-- [ ] Add Redis for session storage (replace in-memory `_sessions` dict)
-- [ ] Enable Fernet encryption for vault files at rest
-- [ ] Set `CORS` origins to specific domains (not wildcard)
-- [ ] Add rate limiting (FastAPI SlowAPI)
-- [ ] Store intruder images in cloud storage (S3/GCS) for durability
 
 ---
 
