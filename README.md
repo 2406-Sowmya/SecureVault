@@ -1,4 +1,4 @@
-# 🔐 SecureVault v2.0 — Production Upgrade
+# 🔐 SecureVault 
 
 > Multi-factor authentication + encrypted file vault with React frontend and FastAPI backend.
 
